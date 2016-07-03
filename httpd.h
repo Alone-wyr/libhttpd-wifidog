@@ -94,6 +94,7 @@ extern "C" {
 
     typedef struct {
         int method, contentLength, authLength;
+		//path存放请求的路径...或者说是请求的页面咯.
         char path[HTTP_MAX_URL], query[HTTP_MAX_URL], host[HTTP_MAX_URL],       /* acv@acv.ca/wifidog: Added decoding
                                                                                    of host: header if present. */
          ifModified[HTTP_MAX_URL];

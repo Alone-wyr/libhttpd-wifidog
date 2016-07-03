@@ -494,12 +494,17 @@ httpdReadRequest(httpd * server, request * r)
      ** Process any URL data
      */
     cp = strchr(r->request.path, '?');
-	//如果path中包含了'?'，则需要处理一下这个path.
+	//如果path中包含了'?'，则需要处理一下这个path.因为有?的path代表是有传递参数的...
+	//cp确定到'?'位置...
 	//把query拷贝到request.query上.
     if (cp != NULL) {
+		//相当于把path的'?'给替换成了'\0'..那相当于把path给截断成2个字符串啦.
+		//一个就是真正的path..后面字符串接着参数.cp指向第一个参数..(不再是那个'?'字符了)
         *cp++ = 0;
+		//把参数拷贝到requery字符串中.
         strncpy(r->request.query, cp, sizeof(r->request.query));
         r->request.query[sizeof(r->request.query) - 1] = 0;
+		//把path带的参数存放到request结构体中.
         _httpd_storeData(r, cp);
     }
 
@@ -846,6 +851,9 @@ va_dcl
     _httpd_net_write(r->clientSock, buf, strlen(buf));
 }
 
+//调用这个函数的前面都会调用httpdReadRequest函数，它会读取来自服务器的返回.
+//然后根据需求填充request结构体..
+//而这个函数，根据填充好了的request结构体来执行不同的处理。
 void
 httpdProcessRequest(httpd * server, request * r)
 {

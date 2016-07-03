@@ -322,45 +322,57 @@ _httpd_storeData(request * r, char *query)
     if (!query)
         return;
 
+	//var->variable 变量名称.
+	//val->value 变量的值.
+	
     var = (char *)malloc(strlen(query) + 1);
-
+	//cp指向参数字符串。
+	//cp2指向新分配的内存,在下面它会保存参数的名称.
     cp = query;
     cp2 = var;
     bzero(var, strlen(query) + 1);
+	//参数的值先设置为null.
     val = NULL;
+	
+//这里有必要知道一下http是如何传递参数的..
+//一般来说请求页面中包含?后面接参数列表，如果有多个参数那就用'&'分隔开来..如下所示:
+//?var1=hello&var2=world这样传递2个参数.
+	
     while (*cp) {
         if (*cp == '=') {
+			//有看到'='就可以分隔开来参数名和参数值了.
             cp++;
+			//var中有拷贝了'='，现在把它给替换掉.
             *cp2 = 0;
+			//这样val是指向了参数值了.
             val = cp;
             continue;
         }
+		//没有只有一个参数而言的话..那结局就是val指向参数值.var指向参数名.
+		//但是对于多个参数的话，就需要额外的处理了..需要先保存起来,然后在重新
+		//进行再解析.
         if (*cp == '&') {
+			//那如果找到该字符..代表当前的参数不止1个..
             *cp = 0;
+			//对参数值进行转义.
             tmpVal = _httpd_unescape(val);
+			//var为变量名..tmpVal是转义后的参数值..这里就是保存参数啦!
             httpdAddVariable(r, var, tmpVal);
+			//前进掉'&'
             cp++;
+			//
             cp2 = var;
             val = NULL;
             continue;
         }
         if (val) {
+		//确定了参数值的地方，它不会拷贝参数值到var的..这里就是不断的递增就好了.
+		//
             cp++;
         } else {
+        //拷贝参数名到刚新分配的空间,其实就是var申请的空间啦.
             *cp2 = *cp++;
-            /*
-               if (*cp2 == '.')
-               {
-               strcpy(cp2,"_dot_");
-               cp2 += 5;
-               }
-               else
-               {
-             */
             cp2++;
-            /*
-               }
-             */
         }
     }
     if (val != NULL) {
